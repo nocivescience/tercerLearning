@@ -18,7 +18,7 @@ PIL.Image.open(str(roses[1]))
 batch_size = 32
 img_height = 180
 img_width = 180
-train_ds = tf.keras.preprocessing.image_dataset_from_directory(
+train_ds = tf.keras.utils.image_dataset_from_directory(
     data_dir,
     validation_split=0.2,
     subset="training",
@@ -26,7 +26,7 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     image_size=(img_height, img_width),
     batch_size=batch_size
 )
-val_ds = tf.keras.preprocessing.image_dataset_from_directory(
+val_ds = tf.keras.utils.image_dataset_from_directory(
     data_dir,
     validation_split=0.2,
     subset="validation",
@@ -60,7 +60,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 num_classes = 5
 
 model = tf.keras.Sequential([
-    tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
+    tf.keras.layers.Rescaling(1./255),
     tf.keras.layers.Conv2D(32, 3, activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(32, 3, activation='relu'),
@@ -73,7 +73,7 @@ model = tf.keras.Sequential([
 ])
 model.compile(
     optimizer='adam',
-    loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=['accuracy']
 )
 model.fit(
@@ -137,7 +137,7 @@ def configure_for_performance(ds):
 
 train_ds = configure_for_performance(train_ds)
 val_ds = configure_for_performance(val_ds)
-image_batch, label_batch = next(iter(val_ds))
+image_batch, label_batch = next(iter(train_ds))
 
 plt.figure(figsize=(10, 10))
 for i in range(9):
@@ -153,7 +153,7 @@ model.fit(
 )
 (train_ds, val_ds, test_ds), metadata = tfds.load(
     'tf_flowers',
-    split=['train[:80%]', 'train[80%,90%]', 'train[90%:]'],
+    split=['train[:80%]', 'train[80%:90%]', 'train[90%:]'],
     with_info=True,
     as_supervised=True,
 )
